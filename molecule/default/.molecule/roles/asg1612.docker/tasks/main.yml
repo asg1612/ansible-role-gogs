@@ -1,0 +1,52 @@
+---
+- name: Install docker on ubuntu
+  import_tasks: ubuntu.yml
+  when: ansible_distribution == "Ubuntu"
+
+- name: Install docker on Centos
+  import_tasks: centos.yml
+  when: ansible_distribution == "CentOS"
+
+- name: Install python packages
+  pip:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - docker
+    - docker-compose
+    - dnspython
+
+- name: Remove docker-py
+  pip:
+    name: "{{ item }}"
+    state: absent
+  with_items:
+    - docker-py
+
+- name: Create directory /etc/docker
+  file:
+    path: /etc/docker
+    state: directory
+
+- name: Upload docker configuration
+  template:
+    src: daemon.json.j2
+    dest: /etc/docker/daemon.json
+  when: daemon_json is defined
+  notify:
+    - restart docker
+
+- name: When daemon.json is undefined. Delete daemon.json
+  file:
+    path: /etc/docker/daemon.json
+    state: absent
+  when: daemon_json is undefined
+  notify:
+    - restart docker
+
+- name: Ensure Docker is running
+  systemd:
+    name: docker
+    state: started
+
+- meta: flush_handlers

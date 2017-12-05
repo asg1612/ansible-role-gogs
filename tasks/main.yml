@@ -1,0 +1,22 @@
+---
+# tasks file for ansible-role-gogs
+
+- name: Create temp directory for deploy
+  file:
+    path: /var/tmp/gogs/
+    state: directory
+
+- name: Create directory for store gogs data
+  file:
+    path: /var/gogs/
+    state: directory
+
+- name: Upload docker-compose file
+  template:
+    src: docker-compose.yml.j2
+    dest: /var/tmp/gogs/docker-compose.yml
+
+- name: Deploy gogs server
+  docker_service:
+    project_src: /var/tmp/gogs/
+    state: present

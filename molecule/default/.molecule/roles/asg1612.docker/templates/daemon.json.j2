@@ -1,0 +1,11 @@
+{
+{% for item in daemon_json %}
+{% if daemon_json[item] is string %}
+  "{{item}}": "{{daemon_json[item]}}"{% if not loop.last %},{% endif %}
+
+{% else %}
+  "{{ item }}": ["{{ daemon_json[item] | list | join ("\",\"") }}"]{% if not loop.last %},{% endif %}
+
+{% endif %}
+{% endfor %}
+}
